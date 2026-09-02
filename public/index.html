@@ -5,44 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialClip Pro - Clean Video Downloader</title>
 
-    <!-- Monetag Verification Meta Tag (Render Domain) -->
     <meta name="monetag" content="c23f55b0243c78efa84593dd6bf532e1">
-
-    <!-- Monetag MultiTag Script -->
     <script src="https://quge5.com/88/tag.min.js" data-zone="275626" async data-cfasync="false"></script>
-
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root {
-            --bg: #0f1015;
-            --card: #1a1c23;
-            --accent: #dc2743;
-            --text: #ffffff;
-            --subtext: #9a9cab;
-        }
-
+        :root { --bg: #0f1015; --card: #1a1c23; --accent: #dc2743; --text: #ffffff; --subtext: #9a9cab; }
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', sans-serif; }
         body { background: var(--bg); color: var(--text); display:flex; flex-direction:column; align-items:center; min-height:100vh; }
-        
         header { width:100%; padding:18px 0; text-align:center; background: rgba(26,28,35,0.9); border-bottom:1px solid rgba(255,255,255,0.05); }
         .logo { font-size:1.6rem; font-weight:700; color: var(--accent); }
-
         .container { width:100%; max-width:750px; padding:20px; }
-        
         .downloader-card { background: var(--card); padding:30px 20px; border-radius:14px; text-align:center; border:1px solid rgba(255,255,255,0.05); margin-top:15px; }
-        
         .input-box { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
         .input-box input { flex:1; min-width:240px; padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:#000; color:#fff; outline:none; }
-        .btn-submit { padding:14px 24px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; transition:0.2s; }
-        .btn-submit:hover { opacity:0.9; }
-
-        /* Video Result Preview Card */
+        .btn-submit { padding:14px 24px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
         .result-card { display:none; background:var(--card); margin-top:20px; border-radius:14px; padding:20px; border:1px solid rgba(255,255,255,0.1); text-align:left; }
         .result-title { font-size:1rem; margin-bottom:15px; color:#fff; font-weight:600; }
-        .download-options { display:flex; flex-direction:column; gap:10px; }
-        .dl-btn { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:14px 18px; border-radius:8px; text-decoration:none; color:#fff; font-size:0.95rem; transition:0.2s; border:1px solid rgba(255,255,255,0.08); }
+        .dl-btn { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:14px 18px; border-radius:8px; text-decoration:none; color:#fff; font-size:0.95rem; margin-top:8px; border:1px solid rgba(255,255,255,0.08); }
         .dl-btn:hover { background:var(--accent); }
     </style>
 </head>
@@ -62,66 +42,72 @@
             </form>
         </div>
 
-        <!-- Video Download Options Card -->
         <div class="result-card" id="result-box">
-            <div class="result-title" id="res-title"><i class="fa-solid fa-square-check" style="color:#2ecc71;"></i> Video Ready for Download:</div>
-            <div class="download-options" id="options-container">
-                <!-- Direct Clean Download Links -->
-            </div>
+            <div class="result-title"><i class="fa-solid fa-square-check" style="color:#2ecc71;"></i> Download Ready:</div>
+            <div id="options-container"></div>
         </div>
     </div>
 
 <script>
+    const INSTANCES = [
+        'https://co.wuk.sh/api/json',
+        'https://api.cobalt.tools/api/json'
+    ];
+
     document.getElementById('dl-form').addEventListener('submit', async function(e) {
         e.preventDefault();
-        const url = document.getElementById('video-url').value;
+        let url = document.getElementById('video-url').value.trim();
         const btn = document.getElementById('btn-text');
         const resultBox = document.getElementById('result-box');
         const container = document.getElementById('options-container');
 
+        // Clean tracking parameters from Reel link
+        url = url.split('?')[0];
+
         btn.innerText = 'Fetching...';
         btn.disabled = true;
 
-        try {
-            const res = await fetch('/api/fetch-info', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url })
-            });
+        let success = false;
 
-            const data = await res.json();
+        for (const apiInstance of INSTANCES) {
+            try {
+                const res = await fetch(apiInstance, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ url: url })
+                });
 
-            if (data.status === 'success') {
-                container.innerHTML = '';
-                
-                if (data.downloadUrl) {
-                    container.innerHTML += `
-                        <a href="${data.downloadUrl}" target="_blank" class="dl-btn">
-                            <span><i class="fa-solid fa-video"></i> HD Video (MP4)</span>
-                            <span style="font-weight:bold;">Direct Download <i class="fa-solid fa-arrow-down"></i></span>
-                        </a>`;
-                }
+                const data = await res.json();
 
-                if (data.picker && data.picker.length > 0) {
-                    data.picker.forEach((item, index) => {
+                if (data && (data.url || data.picker)) {
+                    container.innerHTML = '';
+                    
+                    const downloadTarget = data.url || (data.picker && data.picker[0] && data.picker[0].url);
+                    if (downloadTarget) {
                         container.innerHTML += `
-                            <a href="${item.url}" target="_blank" class="dl-btn">
-                                <span><i class="fa-solid fa-film"></i> Quality Option ${index + 1}</span>
-                                <span>Download</span>
+                            <a href="${downloadTarget}" target="_blank" rel="noopener" class="dl-btn">
+                                <span><i class="fa-solid fa-video"></i> Direct HD Video (MP4)</span>
+                                <span style="font-weight:bold;">Download <i class="fa-solid fa-arrow-down"></i></span>
                             </a>`;
-                    });
+                        resultBox.style.display = 'block';
+                        success = true;
+                        break;
+                    }
                 }
-
-                resultBox.style.display = 'block';
-            } else {
-                alert('Could not fetch video. Please check URL.');
+            } catch (err) {
+                console.log('Trying fallback instance...');
             }
-        } catch (err) {
-            alert('Server error, try again.');
-        } finally {
-            btn.innerText = 'Get Download Links';
-            btn.disabled = false;
         }
+
+        if (!success) {
+            alert('Video URL block ho rahi hai ya invalid hai. Kripya doosra link try karein.');
+        }
+
+        btn.innerText = 'Get Download Links';
+        btn.disabled = false;
     });
 </script>
 </body>

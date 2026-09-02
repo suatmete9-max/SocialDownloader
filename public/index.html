@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SocialClip Pro - Clean Video Downloader</title>
 
-    <meta name="monetag" content="f62142c5ca13d35f2ef65cbe1a18827e">
+    <!-- Monetag Verification Meta Tag (Render Domain) -->
+    <meta name="monetag" content="c23f55b0243c78efa84593dd6bf532e1">
+
+    <!-- Monetag MultiTag Script -->
+    <script src="https://quge5.com/88/tag.min.js" data-zone="275626" async data-cfasync="false"></script>
+
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -25,20 +31,18 @@
 
         .container { width:100%; max-width:750px; padding:20px; }
         
-        /* Clean Banner Spaces (Disciplined Ads) */
-        .ad-banner { width:100%; height:90px; background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.1); border-radius:8px; display:flex; align-items:center; justify-content:center; margin:15px 0; color:var(--subtext); font-size:0.8rem; }
-
-        .downloader-card { background: var(--card); padding:30px 20px; border-radius:14px; text-align:center; border:1px solid rgba(255,255,255,0.05); }
+        .downloader-card { background: var(--card); padding:30px 20px; border-radius:14px; text-align:center; border:1px solid rgba(255,255,255,0.05); margin-top:15px; }
         
         .input-box { display:flex; gap:10px; margin-top:20px; flex-wrap:wrap; }
         .input-box input { flex:1; min-width:240px; padding:14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:#000; color:#fff; outline:none; }
-        .btn-submit { padding:14px 24px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+        .btn-submit { padding:14px 24px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; transition:0.2s; }
+        .btn-submit:hover { opacity:0.9; }
 
         /* Video Result Preview Card */
         .result-card { display:none; background:var(--card); margin-top:20px; border-radius:14px; padding:20px; border:1px solid rgba(255,255,255,0.1); text-align:left; }
-        .result-title { font-size:1rem; margin-bottom:15px; color:#fff; }
+        .result-title { font-size:1rem; margin-bottom:15px; color:#fff; font-weight:600; }
         .download-options { display:flex; flex-direction:column; gap:10px; }
-        .dl-btn { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:12px 16px; border-radius:8px; text-decoration:none; color:#fff; font-size:0.9rem; transition:0.2s; }
+        .dl-btn { display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:14px 18px; border-radius:8px; text-decoration:none; color:#fff; font-size:0.95rem; transition:0.2s; border:1px solid rgba(255,255,255,0.08); }
         .dl-btn:hover { background:var(--accent); }
     </style>
 </head>
@@ -47,11 +51,9 @@
     <header><div class="logo"><i class="fa-solid fa-circle-down"></i> SocialClip Pro</div></header>
 
     <div class="container">
-        <!-- Top Ad Space -->
-        <div class="ad-banner">Monetag Header Banner (Native)</div>
-
         <div class="downloader-card">
             <h2>Paste Video URL to Download</h2>
+            <p style="color:var(--subtext); font-size:0.9rem; margin-top:5px;">Supports Instagram, TikTok, YouTube Shorts & Facebook</p>
             <form id="dl-form">
                 <div class="input-box">
                     <input type="url" id="video-url" placeholder="Paste Reel, TikTok, Shorts URL..." required>
@@ -62,14 +64,11 @@
 
         <!-- Video Download Options Card -->
         <div class="result-card" id="result-box">
-            <div class="result-title" id="res-title">Ready for Download</div>
+            <div class="result-title" id="res-title"><i class="fa-solid fa-square-check" style="color:#2ecc71;"></i> Video Ready for Download:</div>
             <div class="download-options" id="options-container">
                 <!-- Direct Clean Download Links -->
             </div>
         </div>
-
-        <!-- Middle Ad Space -->
-        <div class="ad-banner">Monetag Middle Banner (Native)</div>
     </div>
 
 <script>

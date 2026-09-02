@@ -8,35 +8,47 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Video Info Fetcher Route
+// Public Cobalt API Instances for High Availability
+const COBALT_INSTANCES = [
+    'https://api.cobalt.tools/api/json',
+    'https://co.wuk.sh/api/json',
+    'https://cobalt.stream/api/json'
+];
+
 app.post('/api/fetch-info', async (req, res) => {
-    const { url } = req.body;
-    if (!url) return res.status(400).json({ error: 'URL required' });
+    let { url } = req.body;
+    if (!url) return res.status(400).json({ error: 'URL is required' });
 
-    try {
-        const response = await axios.post('https://co.wuk.sh/api/json', {
-            url: url,
-            vQuality: 'max'
-        }, {
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        });
+    // Clean tracking query parameters (e.g. ?igsh=...) from URL
+    url = url.split('?')[0];
 
-        const data = response.data;
-        if (data.url || data.picker) {
-            return res.json({
-                status: 'success',
-                title: 'Social Media Video Clip',
-                downloadUrl: data.url || (data.picker && data.picker[0].url),
-                picker: data.picker || []
+    for (const instance of COBALT_INSTANCES) {
+        try {
+            const response = await axios.post(instance, {
+                url: url
+            }, {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+                },
+                timeout: 8000
             });
+
+            const data = response.data;
+            if (data && (data.url || data.picker)) {
+                return res.json({
+                    status: 'success',
+                    downloadUrl: data.url || (data.picker && data.picker[0] && data.picker[0].url),
+                    picker: data.picker || []
+                });
+            }
+        } catch (err) {
+            console.log(`Failed with instance: ${instance}, trying next...`);
         }
-        res.status(400).json({ error: 'Video fetch failed' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error processing request' });
     }
+
+    return res.status(500).json({ error: 'Unable to process video at this time. Please try another link.' });
 });
 
 const PORT = process.env.PORT || 3000;
